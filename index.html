@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"> -->
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <h1>Basic Contract</h1>
+        <span id="countUsr"></span>
+
+        <h2 id="User"></h2></br>
+        <span id="usrTrans"></span>
+        <hr>
+
+        <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+
+        <!-- <label for="name">Name</label> -->
+        First Name:<br/>
+        <input id="fName" type="text"></br>
+        Last Name:<br/>
+        <input id="lName" type="text"></br>
+
+        <!-- <label for="name">Age</label> -->
+        Age:<br/>
+        <input id="age" type="text">
+
+        <button id="button">Update Info</button>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+       // Our future code here..
+       if (typeof web3 !== 'undefined') {
+           web3 = new Web3(web3.currentProvider);
+       } else {
+           web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+       }
+
+       web3.eth.defaultAccount = web3.eth.accounts[0];
+
+        var FirstContract = web3.eth.contract([
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "userAccts",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getDatas",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "ad",
+				"type": "address"
+			}
+		],
+		"name": "getData",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "bytes16"
+			},
+			{
+				"name": "",
+				"type": "bytes16"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "countUsers",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "firName",
+				"type": "bytes16"
+			},
+			{
+				"indexed": false,
+				"name": "lasName",
+				"type": "bytes16"
+			},
+			{
+				"indexed": false,
+				"name": "age",
+				"type": "uint256"
+			}
+		],
+		"name": "UserInfo",
+		"type": "event"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_address",
+				"type": "address"
+			},
+			{
+				"name": "_age",
+				"type": "uint256"
+			},
+			{
+				"name": "_fName",
+				"type": "bytes16"
+			},
+			{
+				"name": "_lName",
+				"type": "bytes16"
+			}
+		],
+		"name": "setData",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]);
+
+var Abc = FirstContract.at('0x4d1fe903c18da577d43698653fe177e435c8bc43');
+console.log(Abc);
+
+
+// Abc.getData(function(error, result){
+//             if(!error)
+//                 {
+//                     $("#User").html(result[0]+' is '+result[1]+' years old');
+//                     console.log(result);
+//                 }
+//             else
+//                 console.error(error);
+//         });
+
+      var UserEvent = Abc.UserInfo({},'latest');
+
+      UserEvent.watch(function(error, result){
+            if (!error)
+                {  if (result.blockHash != $("#usrTrans").html())
+                    $("#loader").hide();
+
+                    $("#usrTrans").html('Block hash: ' +result.blockHash);
+                    $("#User").html(web3.toAscii(result.args.firName) + ' ' + web3.toAscii(result.args.lasName) + '  is '+result.args.age + ' <em>years olds!</em> ');
+                } else {
+                    $("#loader").hide();
+                }
+        });
+
+        Abc.countUsers(function(err, res){
+          if(res){
+              $("#countUsr").html(res.c + 'Users');
+          }
+        });
+
+//         $("#button").click(function() {
+//     $("#loader").show();
+//     Coursetro.setInstructor(web3.eth.defaultAccount, $("#age").val(), $("#fName").val(),$("#lName").val(), (err, res) => {
+//         if (err)
+//             $("#loader").hide();
+// });
+
+        $("#button").click(function() {
+            $("#loader").show();
+            Abc.setData(web3.eth.defaultAccount, $("#age").val(), $("#fName").val(), $("#lName").val(), function(err, res){
+              if(err){
+                $("#loader").hide();
+              }
+            });
+        });
+
+
+    </script>
+
+</body>
+</html>
